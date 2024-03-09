@@ -3,8 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function App() {
-  const [task, setTask] = useState('');
+// Custom hook to handle AsyncStorage tasks
+const useAsyncStorageTasks = () => {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
@@ -25,17 +25,24 @@ export default function App() {
   const saveTasks = async (updatedTasks) => {
     try {
       await AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks));
+      setTasks(updatedTasks);
     } catch (error) {
       console.error('Error saving tasks:', error);
     }
   };
+
+  return { tasks, saveTasks };
+};
+
+export default function App() {
+  const { tasks, saveTasks } = useAsyncStorageTasks();
+  const [task, setTask] = useState('');
 
   const handleAddTask = () => {
     if (task.trim() === '') {
       return; // Prevent adding empty task
     }
     const updatedTasks = [...tasks, task];
-    setTasks(updatedTasks);
     saveTasks(updatedTasks);
     setTask('');
   };
@@ -43,7 +50,6 @@ export default function App() {
   const handleDeleteTask = index => {
     const updatedTasks = [...tasks];
     updatedTasks.splice(index, 1);
-    setTasks(updatedTasks);
     saveTasks(updatedTasks);
   };
 
@@ -53,7 +59,6 @@ export default function App() {
       <Button title="Delete" onPress={() => handleDeleteTask(index)} />
     </View>
   );
-  
 
   return (
     <View style={styles.container}>
