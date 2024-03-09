@@ -49,10 +49,11 @@ export default function App() {
 
   const renderItem = ({ item, index }) => (
     <View style={styles.taskContainer}>
-      <Text style={styles.task}>{item}</Text>
+      <Text style={styles.task}>{index + 1}. {item}</Text>
       <Button title="Delete" onPress={() => handleDeleteTask(index)} />
     </View>
   );
+  
 
   return (
     <View style={styles.container}>
