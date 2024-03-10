@@ -37,6 +37,7 @@ export default function App() {
   const { tasks, saveTasks } = useAsyncStorageTasks();
   const [task, setTask] = useState('');
   const [ukTime, setUkTime] = useState(null);
+  const [showUkTime, setShowUkTime] = useState(false);
 
   const handleAddTask = () => {
     if (task.trim() === '') {
@@ -69,9 +70,14 @@ export default function App() {
       const time = datetime.toTimeString().split(' ')[0]; // hh:mm:ss
 
       setUkTime({ date, time });
+      setShowUkTime(true); // Show the UK date and time
     } catch (error) {
       console.error('Error sending HTTP request:', error);
     }
+  };
+
+  const toggleUkTime = () => {
+    setShowUkTime(prevState => !prevState); // Toggle the visibility of UK date and time
   };
 
   const renderItem = ({ item, index }) => (
@@ -98,8 +104,8 @@ export default function App() {
         keyExtractor={(item, index) => index.toString()}
         style={styles.taskList}
       />
-      <Button title="UK Date & Time" onPress={sendHttpRequest} />
-      {ukTime && (
+      <Button title={showUkTime ? "Hide UK Date & Time" : "Show UK Date & Time"} onPress={showUkTime ? toggleUkTime : sendHttpRequest} />
+      {showUkTime && ukTime && (
         <View style={styles.ukTimeContainer}>
           <Text style={styles.ukTime}>Date: {ukTime.date}</Text>
           <Text style={styles.ukTime}>Time: {ukTime.time}</Text>
