@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Custom hook to handle AsyncStorage tasks
 const useAsyncStorageTasks = () => {
   const [tasks, setTasks] = useState([]);
 
@@ -37,6 +36,7 @@ const useAsyncStorageTasks = () => {
 export default function App() {
   const { tasks, saveTasks } = useAsyncStorageTasks();
   const [task, setTask] = useState('');
+  const [ukTime, setUkTime] = useState(null);
 
   const handleAddTask = () => {
     if (task.trim() === '') {
@@ -51,6 +51,27 @@ export default function App() {
     const updatedTasks = [...tasks];
     updatedTasks.splice(index, 1);
     saveTasks(updatedTasks);
+  };
+
+  const sendHttpRequest = async () => {
+    try {
+      const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/London');
+
+      if (!response.ok) {
+        throw new Error('HTTP request failed');
+      }
+
+      const data = await response.json();
+
+      // Extract date and time components
+      const datetime = new Date(data.datetime);
+      const date = datetime.toISOString().split('T')[0]; // yyyy-mm-dd
+      const time = datetime.toTimeString().split(' ')[0]; // hh:mm:ss
+
+      setUkTime({ date, time });
+    } catch (error) {
+      console.error('Error sending HTTP request:', error);
+    }
   };
 
   const renderItem = ({ item, index }) => (
@@ -77,6 +98,13 @@ export default function App() {
         keyExtractor={(item, index) => index.toString()}
         style={styles.taskList}
       />
+      <Button title="UK Date & Time" onPress={sendHttpRequest} />
+      {ukTime && (
+        <View style={styles.ukTimeContainer}>
+          <Text style={styles.ukTime}>Date: {ukTime.date}</Text>
+          <Text style={styles.ukTime}>Time: {ukTime.time}</Text>
+        </View>
+      )}
       <StatusBar style="auto" />
     </View>
   );
@@ -88,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 50, // Added extra space on top
+    paddingTop: 50,
     padding: 20,
   },
   header: {
@@ -115,5 +143,12 @@ const styles = StyleSheet.create({
   taskList: {
     flex: 1,
     width: '100%',
+  },
+  ukTimeContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  ukTime: {
+    fontSize: 18,
   },
 });
